@@ -22,6 +22,6 @@ public class Families {
 
     @ManyToOne(cascade = {
             CascadeType.PERSIST, CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH})
-    @JoinColumn(name = "person_id", nullable = false)
+    @JoinColumn(name = "person_id")
     private Person personHeadFamily;
 }

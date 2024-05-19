@@ -17,7 +17,7 @@ public class Relationships {
 
     @ManyToOne(cascade = {
             CascadeType.PERSIST, CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH})
-    @JoinColumn(name = "family_id", nullable = false)
+    @JoinColumn(name = "family_id", nullable = true)
     private Families families;
 
     @Column(name = "date_of_relationship_started")
