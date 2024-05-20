@@ -12,4 +12,5 @@ public class PersonRelationshipRequest {
     private String roleNamePerson2;
     private Date relationshipStartDate;
     private String relationshipTypesName;
+    private String  mainGenealogy;
 }

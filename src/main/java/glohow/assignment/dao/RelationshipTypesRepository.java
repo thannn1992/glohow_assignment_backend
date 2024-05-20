@@ -7,4 +7,5 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 @RepositoryRestResource(path = "relationship_types")
 public interface RelationshipTypesRepository extends JpaRepository<RelationshipTypes, Integer> {
     RelationshipTypes findByRelationshipTypeDescription(String relationshipTypeDescription);
+
 }

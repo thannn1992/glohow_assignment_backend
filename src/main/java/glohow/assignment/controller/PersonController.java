@@ -2,6 +2,7 @@ package glohow.assignment.controller;
 
 import glohow.assignment.entities.Person;
 import glohow.assignment.entities.PersonRelationshipRequest;
+import glohow.assignment.entities.PersonRequest;
 import glohow.assignment.service.PersonService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -16,17 +17,37 @@ public class PersonController {
     @Autowired
     private PersonService personService;
 
-    @PostMapping("/add")
-    public ResponseEntity<?> addPerson(@RequestBody PersonRelationshipRequest request) {
-        System.out.println("role: " + request.getRoleNamePerson1());
+    @PostMapping("/add_new_person_relationship")
+    public ResponseEntity<?> addPersonRelationship(@RequestBody PersonRelationshipRequest request) {
+
         Person person1 = request.getPerson1();
         String roleNamePerson1 = request.getRoleNamePerson1();
         Person person2 = request.getPerson2();
         String roleNamePerson2 = request.getRoleNamePerson2();
         Date relationshipStartDate = request.getRelationshipStartDate();
         String relationshipTypesName = request.getRelationshipTypesName();
-        personService.addPersonAndUpdateRelationshipFather(person1, roleNamePerson1, person2, roleNamePerson2, relationshipStartDate, relationshipTypesName);
+        String mainGenealogy = request.getMainGenealogy();
+        personService.addPersonAndUpdateRelationship(person1, roleNamePerson1, person2, roleNamePerson2, relationshipStartDate, relationshipTypesName, mainGenealogy);
         return ResponseEntity.ok("Adding new Person successfully!");
+    }
+    @PostMapping("/add_new_person")
+    public ResponseEntity<?> addNewPerson(@RequestBody PersonRequest request) {
+        Person person = request.getPerson();
+        String mainGenealogy = request.getMainGenealogy();
+        personService.addPersonAndMainGenealogy(person, mainGenealogy);
+        return ResponseEntity.ok("Adding new Person successfully!");
+    }
+
+    @PostMapping("/update")
+    public ResponseEntity<?> updatePerson(@RequestBody Person request) {
+        personService.updatePerson(request);
+        return ResponseEntity.ok("Update Person successfully!");
+    }
+
+    @PostMapping("/exist_heading_family")
+    public ResponseEntity<?> isHeadingFamily(@RequestBody int request) {
+       Boolean result =  personService.isHeadingFamily(request);
+        return ResponseEntity.ok(result);
     }
 
 }

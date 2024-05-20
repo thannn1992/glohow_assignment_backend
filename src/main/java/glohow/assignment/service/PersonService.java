@@ -1,18 +1,13 @@
 package glohow.assignment.service;
 
-import glohow.assignment.dao.PersonRepository;
-import glohow.assignment.dao.RelationshipTypesRepository;
-import glohow.assignment.dao.RelationshipsRepository;
-import glohow.assignment.dao.RolesRepository;
-import glohow.assignment.entities.Person;
-import glohow.assignment.entities.RelationshipTypes;
-import glohow.assignment.entities.Relationships;
-import glohow.assignment.entities.Roles;
+import glohow.assignment.dao.*;
+import glohow.assignment.entities.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.Date;
 import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class PersonService {
@@ -24,46 +19,198 @@ public class PersonService {
     private RolesRepository rolesRepository;
     @Autowired
     private RelationshipTypesRepository relationshipTypesRepository;
-public void addPersonAndUpdateRelationshipFather(Person person1, String roleNamePerson1, Person person2, String roleNamePerson2, Date relationshipStartDate, String relationshipTypesName){
+    @Autowired
+    private FamiliesRepository familiesRepository;
 
-    Person existingPerson1 = personRepository.findById(person1.getPersonID()).orElseThrow(()-> new RuntimeException("Person1 not found"));
+    public void addPersonAndUpdateRelationship(Person person1, String roleNamePerson1, Person person2, String roleNamePerson2, Date relationshipStartDate, String relationshipTypesName, String mainGenealogyPerson2) {
 
-    Roles rolePerson1 = rolesRepository.findByRoleDescription(roleNamePerson1);
 
-    Roles rolePerson2 = rolesRepository.findByRoleDescription(roleNamePerson2);
+        Person existingPerson1 = personRepository.findById(person1.getPersonID()).orElseThrow(() -> new RuntimeException("Person1 not found"));
 
-    RelationshipTypes relationshipTypes = relationshipTypesRepository.findByRelationshipTypeDescription(relationshipTypesName);
+        Roles rolePerson1 = rolesRepository.findByRoleDescription(roleNamePerson1);
 
-    //update relationship1 for person1
-    Relationships relationships1 = new Relationships();
-    relationships1.setPerson01(existingPerson1);
-    relationships1.setPerson02(person2);
-    relationships1.setPerson01Role(rolePerson1);
-    relationships1.setPerson02Role(rolePerson2);
-    relationships1.setDateOfRelationshipStarted(relationshipStartDate);
-    relationships1.setRelationshipTypes(relationshipTypes);
+        Roles rolePerson2 = rolesRepository.findByRoleDescription(roleNamePerson2);
 
-    //update relationship2 for person2
-    Relationships relationships2 = new Relationships();
-    relationships2.setPerson02(existingPerson1);
-    relationships2.setPerson01(person2);
-    relationships2.setPerson01Role(rolePerson2);
-    relationships2.setPerson02Role(rolePerson1);
-    relationships2.setDateOfRelationshipStarted(relationshipStartDate);
-    relationships2.setRelationshipTypes(relationshipTypes);
+        RelationshipTypes relationshipTypes = relationshipTypesRepository.findByRelationshipTypeDescription(relationshipTypesName);
 
-    Relationships savedRelationship1 = relationshipsRepository.save(relationships1);
-    Relationships savedRelationship2 = relationshipsRepository.save(relationships2);
+        //update relationship1 for person1
+        Relationships relationships1 = new Relationships();
+        relationships1.setPerson01(existingPerson1);
+        relationships1.setPerson02(person2);
+        relationships1.setPerson01Role(rolePerson1);
+        relationships1.setPerson02Role(rolePerson2);
+        relationships1.setDateOfRelationshipStarted(relationshipStartDate);
+        relationships1.setRelationshipTypes(relationshipTypes);
 
-    if(existingPerson1.getListRelationshipsPerson01() == null){
-        person1.setListRelationshipsPerson01(new ArrayList<>());
+        //update relationship2 for person2
+        Relationships relationships2 = new Relationships();
+        relationships2.setPerson01(person2);
+        relationships2.setPerson02(existingPerson1);
+        relationships2.setPerson01Role(rolePerson2);
+        relationships2.setPerson02Role(rolePerson1);
+        relationships2.setDateOfRelationshipStarted(relationshipStartDate);
+        relationships2.setRelationshipTypes(relationshipTypes);
+
+
+        Relationships savedRelationship1 = relationshipsRepository.save(relationships1);
+        Relationships savedRelationship2 = relationshipsRepository.save(relationships2);
+
+        if (existingPerson1.getListRelationshipsPerson01() == null) {
+            existingPerson1.setListRelationshipsPerson01(new ArrayList<>());
+        }
+        existingPerson1.getListRelationshipsPerson01().add(savedRelationship1);
+
+        personRepository.save(existingPerson1);
+
+        Person existingPerson2 = personRepository.save(person2);
+
+        if (existingPerson2.getListRelationshipsPerson02() == null) {
+            existingPerson2.setListRelationshipsPerson02(new ArrayList<>());
+        }
+        existingPerson2.getListRelationshipsPerson02().add(savedRelationship2);
+
+        //Update relationship Husband and Wife from children
+        if (rolePerson2.getRoleDescription().equals("Father") || rolePerson2.getRoleDescription().equals("Mother")) {
+
+            if (rolePerson2.getRoleDescription().equals("Father")) {
+
+                List<Person> listPerson = new ArrayList<>();
+
+                if (rolePerson1.getRoleDescription().equals("Son")) {
+                    listPerson = personRepository.findPerson02ByPerson01IdAndRolesPerson01AndRolesPerson02(existingPerson1.getPersonID(), "Son", "Mother");
+                } else {
+                    listPerson = personRepository.findPerson02ByPerson01IdAndRolesPerson01AndRolesPerson02(existingPerson1.getPersonID(), "Daughter", "Mother");
+                }
+
+                if (!listPerson.isEmpty()) {
+                    Person existingPerson3 = personRepository.findById(listPerson.get(0).getPersonID()).orElseThrow(() -> new RuntimeException("Person1 not found"));
+
+                    Roles rolePersonHusband = rolesRepository.findByRoleDescription("Husband");
+                    Roles rolePersonWife = rolesRepository.findByRoleDescription("Wife");
+                    RelationshipTypes relationshipTypes1 = relationshipTypesRepository.findByRelationshipTypeDescription("Married");
+
+                    Relationships relationships3 = new Relationships();
+                    relationships3.setPerson01(existingPerson2);
+                    relationships3.setPerson02(existingPerson3);
+                    relationships3.setPerson01Role(rolePersonHusband);
+                    relationships3.setPerson02Role(rolePersonWife);
+                    relationships3.setRelationshipTypes(relationshipTypes1);
+
+                    Relationships relationships4 = new Relationships();
+                    relationships4.setPerson01(existingPerson3);
+                    relationships4.setPerson02(existingPerson2);
+                    relationships4.setPerson01Role(rolePersonWife);
+                    relationships4.setPerson02Role(rolePersonHusband);
+                    relationships4.setRelationshipTypes(relationshipTypes1);
+
+                    Relationships savedRelationship3 = relationshipsRepository.save(relationships3);
+                    Relationships savedRelationship4 = relationshipsRepository.save(relationships4);
+                }
+            }
+
+            if (rolePerson2.getRoleDescription().equals("Mother")) {
+
+                List<Person> listPerson = new ArrayList<>();
+
+                if (rolePerson1.getRoleDescription().equals("Son")) {
+                    listPerson = personRepository.findPerson02ByPerson01IdAndRolesPerson01AndRolesPerson02(existingPerson1.getPersonID(), "Son", "Father");
+                } else {
+                    listPerson = personRepository.findPerson02ByPerson01IdAndRolesPerson01AndRolesPerson02(existingPerson1.getPersonID(), "Daughter", "Father");
+                }
+
+                if (!listPerson.isEmpty()) {
+                    Person existingPerson3 = personRepository.findById(listPerson.get(0).getPersonID()).orElseThrow(() -> new RuntimeException("Person1 not found"));
+
+                    Roles rolePersonHusband = rolesRepository.findByRoleDescription("Husband");
+                    Roles rolePersonWife = rolesRepository.findByRoleDescription("Wife");
+                    RelationshipTypes relationshipTypes1 = relationshipTypesRepository.findByRelationshipTypeDescription("Married");
+
+                    Relationships relationships3 = new Relationships();
+                    relationships3.setPerson01(existingPerson2);
+                    relationships3.setPerson02(existingPerson3);
+                    relationships3.setPerson01Role(rolePersonWife);
+                    relationships3.setPerson02Role(rolePersonHusband);
+                    relationships3.setRelationshipTypes(relationshipTypes1);
+
+                    Relationships relationships4 = new Relationships();
+                    relationships4.setPerson01(existingPerson3);
+                    relationships4.setPerson02(existingPerson2);
+                    relationships4.setPerson01Role(rolePersonHusband);
+                    relationships4.setPerson02Role(rolePersonWife);
+                    relationships4.setRelationshipTypes(relationshipTypes1);
+
+                    Relationships savedRelationship3 = relationshipsRepository.save(relationships3);
+                    Relationships savedRelationship4 = relationshipsRepository.save(relationships4);
+                }
+            }
+
+            System.out.println("vo toi day chua 0");
+
+            if (mainGenealogyPerson2.equals("1")) {
+                System.out.println("vo toi day chua 1");
+                List<Person> listPerson = new ArrayList<>();
+                String text = existingPerson2.getGender() + "";
+                System.out.println("text: " + text);
+                if (text.equals("0")) {
+                    System.out.println("kiem tra 1");
+                    listPerson = personRepository.findPerson02ByPerson01IdAndRoles(existingPerson2.getPersonID(), "Wife");
+                } else {
+                    System.out.println("Kiem tra 2");
+                    listPerson = personRepository.findPerson02ByPerson01IdAndRoles(existingPerson2.getPersonID(), "Husband");
+                }
+                if (listPerson.isEmpty()) {
+                    System.out.println("Kiem tra 3");
+                    addingHeadFamilies(existingPerson2);
+                } else {
+                    System.out.println("kiem tra 4");
+                    Person existPerson3 = listPerson.get(0);
+                    boolean checkingExistPerson3 = familiesRepository.existsById(existPerson3.getPersonID());
+                    if (!checkingExistPerson3) {
+                        addingHeadFamilies(existingPerson2);
+                    }
+                }
+            }
+        }
+
+        //Check adding Head Families
+        if (rolePerson2.getRoleDescription().equals("Husband") || rolePerson2.getRoleDescription().equals("Wife")) {
+            boolean checkingExistHeadFamily = familiesRepository.existsByPersonHeadFamily(existingPerson1);
+            if (!checkingExistHeadFamily) {
+                addingHeadFamilies(existingPerson2);
+            }
+        }
+
     }
-    existingPerson1.getListRelationshipsPerson01().add(savedRelationship1);
 
-    person2.getListRelationshipsPerson02().add(savedRelationship2);
+    public void addPersonAndMainGenealogy(Person person, String mainGenealogy) {
+        if (mainGenealogy.equals("1")) {
+            addingHeadFamilies(person);
+        }
+        personRepository.save(person);
+    }
 
-    personRepository.save(person1);
+    public void updatePerson(Person person) {
+        Person existPerson = personRepository.findById(person.getPersonID()).orElseThrow(() -> new RuntimeException("Person Update not found"));
+        existPerson = person;
 
-    personRepository.save(person2);
-}
+        personRepository.save(existPerson);
+
+    }
+
+    public void addingHeadFamilies(Person person) {
+        Families families = new Families();
+        families.setFamilyName(person.getFirstName());
+        families.setPersonHeadFamily(person);
+        Families saveFamilies = familiesRepository.save(families);
+    }
+
+    public boolean isHeadingFamily(int personID) {
+
+        try {
+            Person existingPerson1 = personRepository.findById(personID).orElseThrow(() -> new RuntimeException("Person1 not found"));
+            return familiesRepository.existsByPersonHeadFamily(existingPerson1);
+        }catch (Exception e){
+            return false;
+        }
+    }
 }
