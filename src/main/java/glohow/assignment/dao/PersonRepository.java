@@ -26,4 +26,11 @@ public interface PersonRepository extends JpaRepository<Person, Integer> {
             "WHERE r.person01.personID = :person01Id AND r.person01Role.roleDescription = :roleName1 AND r.person02Role.roleDescription = :roleName2 ")
     List<Person> findPerson02ByPerson01IdAndRolesPerson01AndRolesPerson02(@Param("person01Id") Integer person01Id,
                                                   @Param("roleName1") String roleName1, @Param("roleName2") String roleName2);
+
+    @Query("SELECT DISTINCT r.person02 " +
+            "FROM Relationships r " +
+            "WHERE r.person01.personID = :person01Id AND r.relationshipTypes.relationshipTypeDescription = :relationshipTypeDescription")
+    List<Person> findPerson02ByPerson01IdAndRelationshipTypeDescription(@Param("person01Id") Integer person01Id,
+                                                  @Param("relationshipTypeDescription") String relationshipTypeDescription);
+
 }

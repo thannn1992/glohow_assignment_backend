@@ -22,7 +22,7 @@ public class Person {
     private String lastName;
 
     @Column(name = "gender")
-    private char gender;
+    private String gender;
 
     @Column(name = "date_of_birth")
     private Date doB;
@@ -33,10 +33,8 @@ public class Person {
     @Column(name = "address")
     private String address;
 
-    @ManyToOne(cascade = {
-            CascadeType.PERSIST, CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH})
-    @JoinColumn(name = "marital_status_id")
-    private MaritalStatus maritalStatus;
+    @Column(name = "marital_status")
+    private String maritalStatus;
 
     @OneToMany(mappedBy = "person01", cascade = {
             CascadeType.PERSIST, CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH})

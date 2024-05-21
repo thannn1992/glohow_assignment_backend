@@ -19,11 +19,15 @@ public class PersonController {
 
     @PostMapping("/add_new_person_relationship")
     public ResponseEntity<?> addPersonRelationship(@RequestBody PersonRelationshipRequest request) {
-
+        System.out.println(request.getRoleNamePerson1());
+        System.out.println(request.getRoleNamePerson2());
+        System.out.println(request.getPerson1().getFirstName());
         Person person1 = request.getPerson1();
         String roleNamePerson1 = request.getRoleNamePerson1();
         Person person2 = request.getPerson2();
+
         String roleNamePerson2 = request.getRoleNamePerson2();
+
         Date relationshipStartDate = request.getRelationshipStartDate();
         String relationshipTypesName = request.getRelationshipTypesName();
         String mainGenealogy = request.getMainGenealogy();
@@ -40,6 +44,7 @@ public class PersonController {
 
     @PostMapping("/update")
     public ResponseEntity<?> updatePerson(@RequestBody Person request) {
+
         personService.updatePerson(request);
         return ResponseEntity.ok("Update Person successfully!");
     }
