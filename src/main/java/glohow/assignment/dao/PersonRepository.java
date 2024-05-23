@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
+import java.sql.Date;
 import java.util.List;
 
 @RepositoryRestResource(path = "person")
@@ -32,5 +33,9 @@ public interface PersonRepository extends JpaRepository<Person, Integer> {
             "WHERE r.person01.personID = :person01Id AND r.relationshipTypes.relationshipTypeDescription = :relationshipTypeDescription")
     List<Person> findPerson02ByPerson01IdAndRelationshipTypeDescription(@Param("person01Id") Integer person01Id,
                                                   @Param("relationshipTypeDescription") String relationshipTypeDescription);
-
+    @Query("SELECT r.dateOfRelationshipStarted FROM Relationships r " +
+            "WHERE r.person01.personID = :person01ID AND" +
+            " r.relationshipTypes.relationshipTypeDescription = :relTypeDescription")
+    String findDateStartedRelationshipByPersonId(@Param("person01ID") Integer person01ID,
+                                               @Param("relTypeDescription")String relTypeDescription);
 }

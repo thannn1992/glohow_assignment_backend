@@ -3,12 +3,15 @@ package glohow.assignment.controller;
 import glohow.assignment.entities.Person;
 import glohow.assignment.entities.PersonRelationshipRequest;
 import glohow.assignment.entities.PersonRequest;
+import glohow.assignment.entities.RelationshipTypesRequest;
 import glohow.assignment.service.PersonService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.Date;
+import java.util.Map;
+import java.util.Objects;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -19,9 +22,6 @@ public class PersonController {
 
     @PostMapping("/add_new_person_relationship")
     public ResponseEntity<?> addPersonRelationship(@RequestBody PersonRelationshipRequest request) {
-        System.out.println(request.getRoleNamePerson1());
-        System.out.println(request.getRoleNamePerson2());
-        System.out.println(request.getPerson1().getFirstName());
         Person person1 = request.getPerson1();
         String roleNamePerson1 = request.getRoleNamePerson1();
         Person person2 = request.getPerson2();
@@ -29,9 +29,11 @@ public class PersonController {
         String roleNamePerson2 = request.getRoleNamePerson2();
 
         Date relationshipStartDate = request.getRelationshipStartDate();
-        String relationshipTypesName = request.getRelationshipTypesName();
+        String relationshipTypesName1 = request.getRelationshipTypesNamePerson1();
+        String relationshipTypesName2 = request.getRelationshipTypesNamePerson2();
+
         String mainGenealogy = request.getMainGenealogy();
-        personService.addPersonAndUpdateRelationship(person1, roleNamePerson1, person2, roleNamePerson2, relationshipStartDate, relationshipTypesName, mainGenealogy);
+        personService.addPersonAndUpdateRelationship(person1, roleNamePerson1, person2, roleNamePerson2, relationshipStartDate, relationshipTypesName1, relationshipTypesName2, mainGenealogy);
         return ResponseEntity.ok("Adding new Person successfully!");
     }
     @PostMapping("/add_new_person")
@@ -52,6 +54,14 @@ public class PersonController {
     @PostMapping("/exist_heading_family")
     public ResponseEntity<?> isHeadingFamily(@RequestBody int request) {
        Boolean result =  personService.isHeadingFamily(request);
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/take_date_started_relationship")
+    public ResponseEntity<?> takeDateStartedRel(@RequestBody RelationshipTypesRequest relationshipTypesRequest) {
+        int personID = relationshipTypesRequest.getPersonID();
+        String nameOfRel = relationshipTypesRequest.getNameOfRel();
+        String result =  personService.takeDateOfStartedRel(personID, nameOfRel);
         return ResponseEntity.ok(result);
     }
 

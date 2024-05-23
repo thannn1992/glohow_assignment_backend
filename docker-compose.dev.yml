@@ -1,0 +1,45 @@
+version: '3.8'
+#containers => services
+services:
+  mysql-springboot-services:
+    image: mysql:5.7.44-oracle
+    container_name: mysql-springboot-container
+    ports:
+      - 3306:3306
+    volumes:
+      - mysql-springboot-data:/var/lib/mysql
+      - mysql-springboot-config-deamond:/etc/mysql/conf.d
+    networks:
+      - network-genealogy-portal
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: genealogy_portal
+  springboot-genealogy-portal-docker-services:
+    image: oldmonkey1010/glohow_assignment_backend:v1.0.0
+    container_name: springboot-genealogy-portal-docker-container
+    ports:
+      - 8080:8080
+#    volumes:
+#      - ./:/app
+    networks:
+      - network-genealogy-portal
+
+  my-react-genealogy-portal-docker-services:
+    image: oldmonkey1010/glohow_assignment_frontend:v1.0.0
+    container_name: my-react-genealogy-portal-docker-container
+    ports:
+      - 80:3000
+#    volumes:
+#      - my-react-genealogy-portal-volume:/app
+    networks:
+      - network-genealogy-portal
+
+volumes:
+  mysql-springboot-data:
+  mysql-springboot-config-deamond:
+  my-react-genealogy-portal-volume:
+  #create network
+networks:
+  network-genealogy-portal:
+    name: genealogy-portal-network
+
